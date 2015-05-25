@@ -42,27 +42,41 @@ public class CustomListViewAdapter extends BaseAdapter {
         return position;
     }
 
+    static class ViewHolderItem {
+        TextView itemNumberTextView;
+        TextView contactNameTextView;
+    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+
+        ViewHolderItem viewHolder;
 
         if (inflater == null){
             inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         }
         if (convertView == null){
+
             convertView = inflater.inflate(R.layout.contacts_list_item, null);
+
+            viewHolder = new ViewHolderItem();
+
+            viewHolder.itemNumberTextView = (TextView) convertView.findViewById(R.id.contactListItemNumber);
+            viewHolder.contactNameTextView = (TextView) convertView.findViewById(R.id.contactListName);
+
+            Typeface missionGothicRegularItalicFont = Typeface.createFromAsset(activity.getAssets(), "Mission Gothic Regular Italic.otf");
+            viewHolder.itemNumberTextView.setTypeface(missionGothicRegularItalicFont);
+            viewHolder.contactNameTextView.setTypeface(missionGothicRegularItalicFont);
+
+            convertView.setTag(viewHolder);
+
+        } else {
+            viewHolder = (ViewHolderItem) convertView.getTag();
         }
 
-        TextView listItemNumber = (TextView) convertView.findViewById(R.id.contactListItemNumber);
-        Typeface missionGothicRegularItalicFont = Typeface.createFromAsset(activity.getAssets(), "Mission Gothic Regular Italic.otf");
-        listItemNumber.setTypeface(missionGothicRegularItalicFont);
-
-        TextView listContactName = (TextView) convertView.findViewById(R.id.contactListName);
-        listContactName.setTypeface(missionGothicRegularItalicFont);
-
-        listItemNumber.setText((position+1) + "");
-
-        listContactName.setText(contactNames.get(position));
+        viewHolder.itemNumberTextView.setText((position+1) + "");
+        viewHolder.contactNameTextView.setText(contactNames.get(position));
 
         return convertView;
 

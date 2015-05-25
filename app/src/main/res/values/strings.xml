@@ -10,5 +10,6 @@
     <string name="empty_view_message">Keep your phone on silent, but add contacts that can awaken it,
                                         so that you don\'t miss any calls you don\'t want to.</string>
     <string name="empty_view_message_title">Don\'t miss any important calls!</string>
+    <string name="contact_list_title">Who Can Wake You Up?</string>
 
 </resources>

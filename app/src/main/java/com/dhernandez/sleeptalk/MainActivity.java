@@ -33,6 +33,9 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 //TODO: use a service for long running app: http://developer.android.com/reference/android/app/Service.html
+//TODO: add alphabetocalindexr
+//TODO: consider: autocomplete dropwdown search
+//TODO:ADD SWIPE TO REMOVE
 
 public class MainActivity extends ActionBarActivity {
 
@@ -352,7 +355,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onPause() {
         //unregisterReceiver(myCallReceiver);
-        //unregisterReceiver(myRingerModeChangedReceiver);
+        //unregisterReceiver(myRingerModeChangedReceiver);  TODO: HAVE TO FIGURE OUT SOMETHING HERE
         super.onPause();
     }
 

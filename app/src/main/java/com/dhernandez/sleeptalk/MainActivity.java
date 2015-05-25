@@ -24,7 +24,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -37,27 +36,23 @@ import java.util.ArrayList;
 
 public class MainActivity extends ActionBarActivity {
 
+    public static final String CONTACTS_ADAPTER_DATA_KEY = "mContactsSelected";
+
     private boolean wasCallReceived;
     private int currentRingerMode;
     private ImageButton ringerModeButton;
-    private AudioManager audioManager;
+    private AudioManager mAudioManager;
     private Spinner ringerModeSpinner;
-    private ListView contactSelectedList;
-    private ArrayList<String> contactsSelected;
+    private ListView mContactsSelectedListView;
+    private ArrayList<String> mContactsSelected;
     private boolean[] cursorNamesChecked;
-    private AlertDialog contactsDialog;
-    private ArrayAdapter<String> contactsListAdapter;
-
-    //AnimationDrawable rocketAnimation;
+    private AlertDialog mContactsDialog;
+    private CustomListViewAdapter myCustomContactsListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        //if(getSupportActionBar() != null){
-        //    getSupportActionBar().hide();
-        //}
 
         //ringerModeButton = (ImageButton)findViewById(R.id.ringerModeStatusButton);
 
@@ -67,18 +62,23 @@ public class MainActivity extends ActionBarActivity {
         //spinnerAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         //ringerModeSpinner.setAdapter(spinnerAdapter);
 
-        audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 
-        //ImageButton contactsDialogButton = (ImageButton) findViewById(R.id.contactsDialogButton);
-        //contactsDialogButton.setOnClickListener(new View.OnClickListener() {
-        //    @Override
-        //    public void onClick(View v) {
-       //         showAddContactsDialog();
-        //    }
-        //});
+        mContactsSelectedListView = (ListView)findViewById(R.id.contactSelectedList);
+        mContactsSelectedListView.setEmptyView(findViewById(R.id.empty));
+        registerForContextMenu(mContactsSelectedListView);
 
-        contactSelectedList = (ListView)findViewById(R.id.contactSelectedList);
-        registerForContextMenu(contactSelectedList);
+        if(savedInstanceState != null){
+            mContactsSelected = savedInstanceState.getStringArrayList(CONTACTS_ADAPTER_DATA_KEY);
+            myCustomContactsListAdapter = new CustomListViewAdapter(this, mContactsSelected);
+            mContactsSelectedListView.setAdapter(myCustomContactsListAdapter);
+        }
+
+        setCustomFonts();
+
+    }
+
+    private void setCustomFonts(){
 
         TextView emptyViewMessageTitle = (TextView) findViewById(R.id.emptyMessageTitle);
         Typeface missionGothicBoldItalicFont =  Typeface.createFromAsset(getAssets(), "Mission Gothic Bold Italic.otf");
@@ -97,10 +97,12 @@ public class MainActivity extends ActionBarActivity {
 
         if(getSupportActionBar() != null){
             CharSequence actionBarTitle = getSupportActionBar().getTitle();
-            SpannableString s = new SpannableString(actionBarTitle);
-            s.setSpan(new TypefaceSpan(MainActivity.this, "Mission Gothic Bold Italic.otf"), 0, s.length(),
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            getSupportActionBar().setTitle(s);
+            if(actionBarTitle != null){
+                SpannableString s = new SpannableString(actionBarTitle);
+                s.setSpan(new TypefaceSpan(MainActivity.this, "Mission Gothic Bold Italic.otf"), 0, s.length(),
+                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                getSupportActionBar().setTitle(s);
+            }
         }
 
     }
@@ -118,7 +120,7 @@ public class MainActivity extends ActionBarActivity {
 
         switch (item.getItemId()) {
             case R.id.remove_contact:
-                removeFromSelectedContacts(contactsSelected.get(info.position));
+                removeFromSelectedContacts(mContactsSelected.get(info.position));
                 return true;
             default:
                 return super.onContextItemSelected(item);
@@ -127,17 +129,20 @@ public class MainActivity extends ActionBarActivity {
 
     private void showAddContactsDialog() {
 
-        if(contactsDialog == null){
+        if(mContactsDialog == null){
 
             ArrayList<String> cursorNames = new ArrayList<>();
 
             ContentResolver cr = getContentResolver();
-            String selection = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '" + ("1") + "'"
+            final String SELECTION = ContactsContract.Contacts.IN_VISIBLE_GROUP + " = '" + ("1") + "'"
                                 + " AND " +
                                 ContactsContract.Contacts.HAS_PHONE_NUMBER + "=1";
 
+            final String[] PROJECTION = new String[] {ContactsContract.Data._ID,
+                    ContactsContract.Data.DISPLAY_NAME};
+
             final Cursor contactsCursor = cr.query(ContactsContract.Contacts.CONTENT_URI,
-                    null, selection, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC");
+                    PROJECTION, SELECTION, null, ContactsContract.Contacts.DISPLAY_NAME + " ASC");
 
             if (contactsCursor.getCount() > 0) {
 
@@ -158,7 +163,7 @@ public class MainActivity extends ActionBarActivity {
             cursorNamesChecked = new boolean[cursorNamesArray.length];
             final String[] cursorNamesArray_2 = cursorNamesArray;
 
-            contactsSelected = new ArrayList<>();
+            mContactsSelected = new ArrayList<>();
 
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle(getString(R.string.contacts_dialog_prompt))
@@ -167,33 +172,36 @@ public class MainActivity extends ActionBarActivity {
                         public void onClick(DialogInterface dialog, int which) {
 
                             //Go through array that specifies which entries are checked and if a value at an index is true
-                            //then use get the name at that index in the cursorNamesArray array and add it to the contactsSelected
+                            //then use get the name at that index in the cursorNamesArray array and add it to the mContactsSelected
                             //arrayList which we use in out ListView
                             for(int i=0; i < cursorNamesChecked.length; i++){
                                 if(cursorNamesChecked[i]){
-                                    if(!contactsSelected.contains(cursorNamesArray_2[i])){
+                                    if(!mContactsSelected.contains(cursorNamesArray_2[i])){
                                         addToSelectedContacts(cursorNamesArray_2[i]);
                                     }
                                 }
                                 else {
-                                    if(contactsSelected.contains(cursorNamesArray_2[i])){
+                                    if(mContactsSelected.contains(cursorNamesArray_2[i])){
                                         removeFromSelectedContacts((cursorNamesArray_2[i]));
                                     }
                                 }
                             }
 
-                            if (contactsListAdapter == null) {
+                            if (myCustomContactsListAdapter == null) {
 
-                                contactsListAdapter = new ArrayAdapter<>(MainActivity.this,
-                                        R.layout.contacts_list_item,R.id.contactListName, contactsSelected);
+                                //contactsListAdapter = new ArrayAdapter<>(MainActivity.this,
+                                //        R.layout.contacts_list_item,R.id.contactListName, mContactsSelected);
+
+                                myCustomContactsListAdapter = new CustomListViewAdapter(MainActivity.this, mContactsSelected);
 
                                 // Assign contactsListAdapter to ListView
                                 //use setAdapter here; if it was a listActivity we would use setListAdapter
-                                contactSelectedList.setEmptyView(findViewById(R.id.empty));
-                                contactSelectedList.setAdapter(contactsListAdapter);
+
+                                //mContactsSelectedListView.setAdapter(contactsListAdapter);
+                                mContactsSelectedListView.setAdapter(myCustomContactsListAdapter);
 
                             } else {
-                                contactsListAdapter.notifyDataSetChanged();
+                                myCustomContactsListAdapter.notifyDataSetChanged();
                             }
 
                         }
@@ -211,24 +219,24 @@ public class MainActivity extends ActionBarActivity {
 
                     });
 
-            contactsDialog = builder.create();
+            mContactsDialog = builder.create();
         }
 
-        contactsDialog.show();
+        mContactsDialog.show();
 
     }
 
     private void addToSelectedContacts(String contactToRemove) {
-        contactsSelected.add(contactToRemove);          //TODO: DOES NOT UPDATE THE DIALOG LIST! pt2
-        if(contactsListAdapter!=null){
-            contactsListAdapter.notifyDataSetChanged();
+        mContactsSelected.add(contactToRemove);          //TODO: DOES NOT UPDATE THE DIALOG LIST! pt2
+        if(myCustomContactsListAdapter!=null){
+            myCustomContactsListAdapter.notifyDataSetChanged();
         }
     }
 
     private void removeFromSelectedContacts(String contactToRemove) {
-        contactsSelected.remove(contactToRemove);
-        if(contactsListAdapter!=null){
-            contactsListAdapter.notifyDataSetChanged();  //TODO: DOES NOT UPDATE THE DIALOG LIST!
+        mContactsSelected.remove(contactToRemove);
+        if(myCustomContactsListAdapter!=null){
+            myCustomContactsListAdapter.notifyDataSetChanged();  //TODO: DOES NOT UPDATE THE DIALOG LIST!
         }
     }
 
@@ -237,7 +245,7 @@ public class MainActivity extends ActionBarActivity {
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(AudioManager.RINGER_MODE_CHANGED_ACTION)){
                 Log.d("myRingerModeChangedReceiver:", " ringer was changed!");
-                audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+                mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
                 //setRingerInfo();
             }
         }
@@ -252,9 +260,7 @@ public class MainActivity extends ActionBarActivity {
 
             if(state.equals(TelephonyManager.EXTRA_STATE_RINGING) ){
 
-                Log.d("extra state :", "phone is ringing");
-
-                if(contactsSelected!= null && !contactsSelected.isEmpty()){
+                if(mContactsSelected != null && !mContactsSelected.isEmpty()){
 
                     String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
                     Uri uri = Uri.withAppendedPath(ContactsContract.PhoneLookup.CONTENT_FILTER_URI, Uri.encode(incomingNumber));
@@ -263,12 +269,12 @@ public class MainActivity extends ActionBarActivity {
                     if (cursor != null && cursor.moveToFirst()) {
                         String name = cursor.getString(0);
                         cursor.close();
-                        for(String contact : contactsSelected){
+                        for(String contact : mContactsSelected){
                             if(contact.equals(name)){
 
                                 wasCallReceived = true;
-                                currentRingerMode = audioManager.getRingerMode();
-                                audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+                                currentRingerMode = mAudioManager.getRingerMode();
+                                mAudioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
                                 break;
                             }
                         }
@@ -280,15 +286,14 @@ public class MainActivity extends ActionBarActivity {
             }
 
             else if (intent.hasExtra(TelephonyManager.EXTRA_STATE) && intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(TelephonyManager.EXTRA_STATE_IDLE)){
-                // This code will execute when the call is disconnected
-                Toast.makeText(context, "Detected call hangup event", Toast.LENGTH_LONG).show();
-                Log.d("Detected call hangup event", "IDLE CHECK");
 
-
-                if(wasCallReceived){
-                    audioManager.setRingerMode(currentRingerMode);
+                 // This code will execute when the call is disconnected
+                 Toast.makeText(context, "Detected call hangup event", Toast.LENGTH_LONG).show();
+                 if(wasCallReceived){
+                    mAudioManager.setRingerMode(currentRingerMode);
                     wasCallReceived=false;
-                }
+                 }
+
             }
 
         }
@@ -301,9 +306,9 @@ public class MainActivity extends ActionBarActivity {
         int ringer_mode;
         //if(wasCallReceived){
         //ringer_mode = currentRingerMode;
-        //audioManager.setRingerMode(ringer_mode);
+        //mAudioManager.setRingerMode(ringer_mode);
         //} else {
-        ringer_mode = audioManager.getRingerMode();
+        ringer_mode = mAudioManager.getRingerMode();
         //}
 
         if(ringer_mode == AudioManager.RINGER_MODE_NORMAL){
@@ -318,6 +323,12 @@ public class MainActivity extends ActionBarActivity {
         }
     }
     */
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putStringArrayList(CONTACTS_ADAPTER_DATA_KEY, mContactsSelected);
+    }
 
     @Override
     protected void onResume() {
@@ -350,11 +361,11 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
             switch(position){
-                case 0: audioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
+                case 0: mAudioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
                         break;
-                case 1: audioManager.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
+                case 1: mAudioManager.setRingerMode(AudioManager.RINGER_MODE_VIBRATE);
                         break;
-                case 2: audioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
+                case 2: mAudioManager.setRingerMode(AudioManager.RINGER_MODE_SILENT);
                         break;
             }
             //setRingerInfo();

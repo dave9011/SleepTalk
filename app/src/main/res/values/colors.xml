@@ -11,10 +11,10 @@
     <color name="accent_2">#DB3340</color>
 
     <color name="light_grey">#ff6f6f6f</color>
-    <color name="medium_grey">#ff4b4b4b</color>
+    <color name="medium_grey">#ff535353</color>
     <color name="dark_grey">#403c3f</color>
 
     <color name="primary_text_color">#ff4b4b4b</color>
-    <color name="secondary_text_color">#ffffff</color>
+    <color name="secondary_text_color">@color/medium_grey</color>
 
 </resources>

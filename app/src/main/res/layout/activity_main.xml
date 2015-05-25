@@ -1,5 +1,6 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@color/app_background"
@@ -84,7 +85,6 @@
         android:id="@+id/list_header_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
         android:background="@color/dark_grey"
         android:paddingBottom="12dp"
         android:paddingTop="12dp">
@@ -99,7 +99,7 @@
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="12dp"
             android:text="@string/contact_list_title"
-            android:textColor="@color/secondary_text_color"
+            android:textColor="@android:color/white"
             android:textSize="19sp"/>
 
         <!--
@@ -120,8 +120,8 @@
     <RelativeLayout
         android:id="@+id/relativeLayout"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/list_header_layout"
+        android:layout_weight="1"
+        android:layout_height="0dp"
         android:paddingLeft="20dp"
         android:paddingRight="20dp">
 
@@ -137,7 +137,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_centerHorizontal="true"
-            android:layout_centerVertical="true">
+            >
 
             <ImageView
                 android:id="@+id/emptyViewImage"
@@ -156,7 +156,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="22dp"
                 android:text="@string/empty_view_message_title"
-                android:textAlignment="center"
+                android:gravity="center_horizontal"
                 android:textColor="@color/medium_grey"
                 android:textSize="25sp"/>
 
@@ -167,6 +167,7 @@
                 android:layout_below="@id/emptyMessageTitle"
                 android:layout_centerHorizontal="true"
                 android:layout_marginLeft="1dp"
+                android:layout_marginStart="1dp"
                 android:layout_marginTop="2dp"
                 android:text="@string/empty_view_message"
                 android:textColor="@color/light_grey"
@@ -179,15 +180,12 @@
         android:id="@+id/divider_3"
         android:layout_width="match_parent"
         android:layout_height="2dp"
-        android:layout_alignParentLeft="true"
-        android:layout_above="@+id/status_layout"
         android:background="@color/dark_grey"/>
 
     <FrameLayout
-        android:id="@id/status_layout"
+        android:id="@+id/status_layout"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:background="@color/primary_app_color"
         >
 
@@ -207,4 +205,4 @@
 
     </FrameLayout>
 
-</RelativeLayout>
+</LinearLayout>

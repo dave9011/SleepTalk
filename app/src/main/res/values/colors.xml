@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="app_background">#fff</color>
+
+    <!--#ff1d272f-->
+    <color name="primary_app_color">#1fda9a</color>
+    <color name="secondary_app_color">#1fda9a</color>
+
+    <color name="accent_1">#28ABE3</color>
+    <color name="accent_2">#DB3340</color>
+
+    <color name="light_grey">#ff6f6f6f</color>
+    <color name="medium_grey">#ff4b4b4b</color>
+    <color name="dark_grey">#403c3f</color>
+
+    <color name="primary_text_color">#ff4b4b4b</color>
+    <color name="secondary_text_color">#ffffff</color>
+
+</resources>

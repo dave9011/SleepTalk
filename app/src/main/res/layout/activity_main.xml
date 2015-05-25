@@ -1,0 +1,214 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/app_background"
+                tools:context=".MainActivity">
+
+    <!--
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingBottom="15dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="15dp">
+
+        <TextView
+            android:id="@+id/statusText"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical"
+            android:text="Status:"
+            android:textColor="@color/primary_text_color"
+            android:textSize="22sp"/>
+
+        <ImageButton
+            android:id="@+id/ringerModeStatusButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="8dp"
+            android:adjustViewBounds="true"
+            android:background="@android:color/transparent"
+            android:maxHeight="40dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_ok"/>
+
+        <View
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="10dp"
+            android:background="@color/accent_1"/>
+
+        <Spinner
+            android:id="@+id/ringerModeSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:gravity="center_horizontal"
+            android:soundEffectsEnabled="true"
+            android:spinnerMode="dropdown"
+            android:touchscreenBlocksFocus="true"/>
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider_1"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="@color/accent_1"/>
+
+    <View
+        android:id="@+id/divider_2"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/divider_1"
+        android:background="@color/accent_1"/>
+
+    -->
+
+    <LinearLayout
+        android:id="@+id/list_header_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:background="@color/dark_grey"
+        android:paddingBottom="12dp"
+        android:paddingTop="12dp">
+
+        <TextView
+            android:id="@+id/listTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="12dp"
+            android:text="Who Can Wake You Up?"
+            android:textColor="@color/secondary_text_color"
+            android:textSize="19sp"/>
+
+        <!--
+        <ImageButton
+            android:id="@+id/contactsDialogButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/secondary_app_color"
+            android:src="@drawable/ic_action_new"
+            android:textStyle="bold"
+            android:scaleType="fitCenter"
+            />
+         -->
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider_3"
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/list_header_layout"
+        android:background="@color/primary_app_color"/>
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/status_layout"
+        android:layout_below="@+id/divider_3"
+        android:paddingBottom="20dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingTop="20dp">
+
+        <ListView
+            android:id="@+id/contactSelectedList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="10dp"/>
+
+        <RelativeLayout
+            android:id="@+id/empty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true">
+
+            <ImageView
+                android:id="@+id/emptyViewImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="25dp"
+                android:src="@drawable/ic_empty_view_image"
+                />
+
+            <TextView
+                android:id="@+id/emptyMessageTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/emptyViewImage"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="22dp"
+                android:text="@string/empty_view_message_title"
+                android:textAlignment="center"
+                android:textColor="@color/medium_grey"
+                android:textSize="25sp"/>
+
+            <TextView
+                android:id="@+id/emptyMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/emptyMessageTitle"
+                android:layout_centerHorizontal="true"
+                android:layout_marginLeft="1dp"
+                android:layout_marginTop="2dp"
+                android:text="@string/empty_view_message"
+                android:textColor="@color/light_grey"
+                android:textSize="16sp"/>
+        </RelativeLayout>
+
+    </RelativeLayout>
+
+    <FrameLayout
+        android:id="@id/status_layout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/primary_app_color"
+        >
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingBottom="15dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="15dp"
+            android:text="Status: ok!"
+            android:textColor="@color/dark_grey"
+            android:textSize="23sp"
+            />
+
+    </FrameLayout>
+
+</RelativeLayout>

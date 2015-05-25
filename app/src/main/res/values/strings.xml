@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">SleepTalk</string> <!--DreamGuard -->
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="contacts_spinner_prompt">Who Can Wake You Up?</string>
+    <string name="contacts_dialog_prompt">Who Can Wake You Up?</string>
+    <string name="action_add">Add</string>
+    <string name="empty_view_message">Keep your phone on silent, but add contacts that can awaken it,
+                                        so that you don\'t miss any calls you don\'t want to.</string>
+    <string name="empty_view_message_title">Don\'t miss any important calls!</string>
+
+</resources>

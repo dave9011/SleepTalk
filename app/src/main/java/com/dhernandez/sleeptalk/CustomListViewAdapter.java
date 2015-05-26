@@ -65,7 +65,7 @@ public class CustomListViewAdapter extends BaseAdapter {
             viewHolder.itemNumberTextView = (TextView) convertView.findViewById(R.id.contactListItemNumber);
             viewHolder.contactNameTextView = (TextView) convertView.findViewById(R.id.contactListName);
 
-            Typeface missionGothicRegularItalicFont = Typeface.createFromAsset(activity.getAssets(), "Mission Gothic Regular Italic.otf");
+            Typeface missionGothicRegularItalicFont = Typeface.createFromAsset(activity.getAssets(), "fonts/Mission Gothic Regular Italic.otf");
             viewHolder.itemNumberTextView.setTypeface(missionGothicRegularItalicFont);
             viewHolder.contactNameTextView.setTypeface(missionGothicRegularItalicFont);
 

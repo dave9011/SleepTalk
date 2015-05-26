@@ -55,6 +55,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         //ringerModeButton = (ImageButton)findViewById(R.id.ringerModeStatusButton);
@@ -64,6 +65,12 @@ public class MainActivity extends ActionBarActivity {
         //ArrayAdapter spinnerAdapter = ArrayAdapter.createFromResource(this, R.array.ringer_mode_array, R.layout.spinner_item);
         //spinnerAdapter.setDropDownViewResource(R.layout.spinner_dropdown_item);
         //ringerModeSpinner.setAdapter(spinnerAdapter);
+
+        IntentFilter filter_call_state = new IntentFilter("android.intent.action.PHONE_STATE");
+        registerReceiver(myCallReceiver, filter_call_state);
+
+        IntentFilter filter_ringer_change = new IntentFilter("android.media.RINGER_MODE_CHANGED");
+        registerReceiver(myRingerModeChangedReceiver, filter_ringer_change);
 
         mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 
@@ -84,15 +91,15 @@ public class MainActivity extends ActionBarActivity {
     private void setCustomFonts(){
 
         TextView emptyViewMessageTitle = (TextView) findViewById(R.id.emptyMessageTitle);
-        Typeface missionGothicBoldItalicFont =  Typeface.createFromAsset(getAssets(), "Mission Gothic Bold Italic.otf");
+        Typeface missionGothicBoldItalicFont =  Typeface.createFromAsset(getAssets(), "fonts/Mission Gothic Bold Italic.otf");
         emptyViewMessageTitle.setTypeface(missionGothicBoldItalicFont);
 
         TextView emptyViewMessage = (TextView) findViewById(R.id.emptyMessage);
-        Typeface missionGothicLightFont = Typeface.createFromAsset(getAssets(), "Mission Gothic Light.otf");
+        Typeface missionGothicLightFont = Typeface.createFromAsset(getAssets(), "fonts/Mission Gothic Light.otf");
         emptyViewMessage.setTypeface(missionGothicLightFont);
 
         TextView listTitle = (TextView) findViewById(R.id.listTitle);
-        Typeface missionGothicRegularFont = Typeface.createFromAsset(getAssets(), "Mission Gothic Regular.otf");
+        Typeface missionGothicRegularFont = Typeface.createFromAsset(getAssets(), "fonts/Mission Gothic Regular.otf");
         listTitle.setTypeface(missionGothicRegularFont);
 
         TextView statusText = (TextView) findViewById(R.id.status);
@@ -123,15 +130,19 @@ public class MainActivity extends ActionBarActivity {
 
         switch (item.getItemId()) {
             case R.id.remove_contact:
-                removeFromSelectedContacts(mContactsSelected.get(info.position));
+                removeFromSelectedContacts(mContactsSelected.get(info.position), true);
                 return true;
             default:
                 return super.onContextItemSelected(item);
         }
     }
 
+    String[] mCursorNamesArray;
+    AlertDialog.Builder mDialogBuilder;
+
     private void showAddContactsDialog() {
 
+        //if contactsDialog was not previously created
         if(mContactsDialog == null){
 
             ArrayList<String> cursorNames = new ArrayList<>();
@@ -161,15 +172,15 @@ public class MainActivity extends ActionBarActivity {
                 }
             }
 
-            String[] cursorNamesArray = new String[cursorNames.size()];
-            cursorNamesArray = cursorNames.toArray(cursorNamesArray);
-            cursorNamesChecked = new boolean[cursorNamesArray.length];
-            final String[] cursorNamesArray_2 = cursorNamesArray;
+            if(mCursorNamesArray == null){
+                mCursorNamesArray = new String[cursorNames.size()]; //TODO: check if adding a contact after starting app will show new contct in dialog
+                mCursorNamesArray = cursorNames.toArray(mCursorNamesArray);
+                cursorNamesChecked = new boolean[mCursorNamesArray.length];
+                mContactsSelected = new ArrayList<>();
+            }
 
-            mContactsSelected = new ArrayList<>();
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle(getString(R.string.contacts_dialog_prompt))
+            mDialogBuilder = new AlertDialog.Builder(MainActivity.this);
+            mDialogBuilder.setTitle(getString(R.string.contacts_dialog_prompt))
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -179,13 +190,13 @@ public class MainActivity extends ActionBarActivity {
                             //arrayList which we use in out ListView
                             for(int i=0; i < cursorNamesChecked.length; i++){
                                 if(cursorNamesChecked[i]){
-                                    if(!mContactsSelected.contains(cursorNamesArray_2[i])){
-                                        addToSelectedContacts(cursorNamesArray_2[i]);
+                                    if(!mContactsSelected.contains(mCursorNamesArray[i])){
+                                        addToSelectedContacts(mCursorNamesArray[i]);
                                     }
                                 }
                                 else {
-                                    if(mContactsSelected.contains(cursorNamesArray_2[i])){
-                                        removeFromSelectedContacts((cursorNamesArray_2[i]));
+                                    if(mContactsSelected.contains(mCursorNamesArray[i])){
+                                        removeFromSelectedContacts((mCursorNamesArray[i]), false);
                                     }
                                 }
                             }
@@ -210,7 +221,7 @@ public class MainActivity extends ActionBarActivity {
                         }
                     })
                     .setNegativeButton(android.R.string.cancel, null)
-                    .setMultiChoiceItems(cursorNamesArray, cursorNamesChecked, new DialogInterface.OnMultiChoiceClickListener() {
+                    .setMultiChoiceItems(mCursorNamesArray, cursorNamesChecked, new DialogInterface.OnMultiChoiceClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which, boolean isChecked) {
                             if (isChecked) {
@@ -222,24 +233,47 @@ public class MainActivity extends ActionBarActivity {
 
                     });
 
-            mContactsDialog = builder.create();
+        } else {
+            mDialogBuilder.setMultiChoiceItems(mCursorNamesArray, cursorNamesChecked, new DialogInterface.OnMultiChoiceClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+                    if (isChecked) {
+                        cursorNamesChecked[which] = true;
+                    } else if (cursorNamesChecked[which]) {
+                        cursorNamesChecked[which] = false;
+                    }
+                }
+
+            });
         }
+
+        mContactsDialog = mDialogBuilder.create();
 
         mContactsDialog.show();
 
     }
 
     private void addToSelectedContacts(String contactToRemove) {
-        mContactsSelected.add(contactToRemove);          //TODO: DOES NOT UPDATE THE DIALOG LIST! pt2
+        mContactsSelected.add(contactToRemove);
         if(myCustomContactsListAdapter!=null){
             myCustomContactsListAdapter.notifyDataSetChanged();
         }
     }
 
-    private void removeFromSelectedContacts(String contactToRemove) {
+    private void removeFromSelectedContacts(String contactToRemove, boolean fromContextMenu) {
         mContactsSelected.remove(contactToRemove);
+
+        if(fromContextMenu){                                            Log.d("selected contact to remove = ", contactToRemove);
+            for(int i=0; i<mCursorNamesArray.length; i++){
+                if(mCursorNamesArray[i].equals(contactToRemove)){       Log.d("we have a match at index i = ", i +"");
+                    cursorNamesChecked[i] = false;                      Log.d("mCursorNamesArray[i] = ", mCursorNamesArray[i]);
+                                                                        Log.d("myCustomContactsListAdapter = ", myCustomContactsListAdapter.getCount()+"");
+                }
+            }
+        }
+
         if(myCustomContactsListAdapter!=null){
-            myCustomContactsListAdapter.notifyDataSetChanged();  //TODO: DOES NOT UPDATE THE DIALOG LIST!
+            myCustomContactsListAdapter.notifyDataSetChanged();
         }
     }
 
@@ -274,8 +308,8 @@ public class MainActivity extends ActionBarActivity {
                         cursor.close();
                         for(String contact : mContactsSelected){
                             if(contact.equals(name)){
-
                                 wasCallReceived = true;
+                                Toast.makeText(context, "in for loop wasCallReceived = " + wasCallReceived, Toast.LENGTH_SHORT).show();
                                 currentRingerMode = mAudioManager.getRingerMode();
                                 mAudioManager.setRingerMode(AudioManager.RINGER_MODE_NORMAL);
                                 break;
@@ -291,7 +325,7 @@ public class MainActivity extends ActionBarActivity {
             else if (intent.hasExtra(TelephonyManager.EXTRA_STATE) && intent.getStringExtra(TelephonyManager.EXTRA_STATE).equals(TelephonyManager.EXTRA_STATE_IDLE)){
 
                  // This code will execute when the call is disconnected
-                 Toast.makeText(context, "Detected call hangup event", Toast.LENGTH_LONG).show();
+                 //Toast.makeText(context, "Detected call hangup event, wasCallReceived = " + wasCallReceived, Toast.LENGTH_LONG).show();
                  if(wasCallReceived){
                     mAudioManager.setRingerMode(currentRingerMode);
                     wasCallReceived=false;
@@ -340,23 +374,25 @@ public class MainActivity extends ActionBarActivity {
 
         //because wasCallReceived is initially false, this won't get called prematurely
         if(wasCallReceived){
-            wasCallReceived = false;
+            Toast.makeText(MainActivity.this, "premature check", Toast.LENGTH_SHORT).show();
+            wasCallReceived = false;  //TODO: bug: if call is rejected by the user the ringer mode is not reverted to what it was initially, because of this code
         }
-
-        IntentFilter filter_call_state = new IntentFilter("android.intent.action.PHONE_STATE");
-        registerReceiver(myCallReceiver, filter_call_state);
-
-        IntentFilter filter_ringer_change = new IntentFilter("android.media.RINGER_MODE_CHANGED");
-        registerReceiver(myRingerModeChangedReceiver, filter_ringer_change);
-
         super.onResume();
+
     }
 
     @Override
     protected void onPause() {
         //unregisterReceiver(myCallReceiver);
-        //unregisterReceiver(myRingerModeChangedReceiver);  TODO: HAVE TO FIGURE OUT SOMETHING HERE
+        //unregisterReceiver(myRingerModeChangedReceiver);  TODO: HAVE TO FIGURE OUT SOMETHING HERE (possible solution added in onDestroy)
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(myCallReceiver);
+        unregisterReceiver(myRingerModeChangedReceiver);
     }
 
     private class RingerSpinnerListener implements AdapterView.OnItemSelectedListener {

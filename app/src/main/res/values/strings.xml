@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">SleepTalk</string> <!--DreamGuard -->
+    <string name="app_name">SleepTalk</string> <!-- DreamGuard -->
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
     <string name="contacts_spinner_prompt">Who Can Wake You Up?</string>
@@ -11,5 +11,6 @@
                                         so that you don\'t miss any calls you don\'t want to.</string>
     <string name="empty_view_message_title">Don\'t miss any important calls!</string>
     <string name="contact_list_title">Who Can Wake You Up?</string>
+    <string name="title_activity_edit_contact_list">EditContactListActivity</string>
 
 </resources>

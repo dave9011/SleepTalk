@@ -1,6 +1,7 @@
 package com.dhernandez.sleeptalk;
 
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -13,6 +14,7 @@ import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.telephony.TelephonyManager;
 import android.text.Spannable;
@@ -151,6 +153,7 @@ public class MainActivity extends ActionBarActivity {
     CustomContactsAdapter contactsAdapter;
     private String[] contactsAdapterNames;
     private boolean[] contactsCheckedInDialog;
+    NotificationCompat.Builder mBuilder;
 
     private void showAddContactsDialog() {  //TODO: make contacts reload after new contact added
 
@@ -190,6 +193,21 @@ public class MainActivity extends ActionBarActivity {
                         public void onClick(DialogInterface dialog, int which) {
                             mContactsSelectedListView.setAdapter(contactsAdapter);
                             setContactListCAB();
+
+                            if(mBuilder == null){
+                                mBuilder = new NotificationCompat.Builder(MainActivity.this);
+                                mBuilder.setSmallIcon(R.drawable.ic_status_running)
+                                        .setContentTitle("SmallTalk")
+                                        .setContentText("is currently running")
+                                        .setPriority(NotificationCompat.PRIORITY_LOW);
+                            }
+                            // Sets an ID for the notification
+                            int mNotificationId = 001;
+                            // Gets an instance of the NotificationManager service
+                            NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+                            // Builds the notification and issues it.
+                            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+
                         }
                     })
                     .setNegativeButton(android.R.string.cancel, null)
@@ -332,7 +350,6 @@ public class MainActivity extends ActionBarActivity {
 
         //because wasCallReceived is initially false, this won't get called prematurely
         if(wasCallReceived){
-            Toast.makeText(MainActivity.this, "premature check", Toast.LENGTH_SHORT).show();
             wasCallReceived = false;  //TODO: bug: if call is rejected by the user the ringer mode is not reverted to what it was initially, because of this code
         }
         super.onResume();

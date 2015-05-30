@@ -154,23 +154,19 @@ public class MainActivity extends ActionBarActivity {
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
                 // Here you can do something when items are selected/de-selected,
                 // such as update the title in the CAB
-                Log.d("contextSelection --- ", "before");
                 mContactsAdapter.printContextSelection();
 
                 mContactsAdapter.setSelectingFromCAB(true);
                 if (checked) {
                     nr++;
                     mContactsAdapter.addThroughContextAction(position);
-                    Log.d("*** position: " + position, " added to contextSelection");
                     mContactsAdapter.setSelectionInContactsChecked(position, true);
                 } else {
                     nr--;
                     mContactsAdapter.removeThroughContextAction(position);
-                    Log.d("*** position: " + position, " removed from contextSelection");
                     mContactsAdapter.setSelectionInContactsChecked(position, false);
                 }
                 mode.setTitle(nr + " selected");
-                Log.d("contextSelection --- ", "after");
                 mContactsAdapter.printContextSelection();
             }
 

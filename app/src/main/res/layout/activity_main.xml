@@ -136,43 +136,55 @@
         <RelativeLayout
             android:id="@+id/empty"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerHorizontal="true"
-            >
+            android:layout_height="match_parent">
 
-            <ImageView
-                android:id="@+id/emptyViewImage"
-                android:layout_width="wrap_content"
+            <ScrollView
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="25dp"
-                android:src="@drawable/ic_empty_view_image"
-                />
+                android:layout_centerVertical="true">
 
-            <TextView
-                android:id="@+id/emptyMessageTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/emptyViewImage"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="22dp"
-                android:text="@string/empty_view_message_title"
-                android:gravity="center_horizontal"
-                android:textColor="@color/medium_grey"
-                android:textSize="25sp"/>
+                <RelativeLayout
+                    android:id="@+id/empty_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingBottom="10dp">
 
-            <TextView
-                android:id="@+id/emptyMessage"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/emptyMessageTitle"
-                android:layout_centerHorizontal="true"
-                android:layout_marginLeft="1dp"
-                android:layout_marginStart="1dp"
-                android:layout_marginTop="2dp"
-                android:text="@string/empty_view_message"
-                android:textColor="@color/light_grey"
-                android:textSize="16sp"/>
+                    <ImageView
+                        android:id="@+id/emptyViewImage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerHorizontal="true"
+                        android:src="@drawable/ic_empty_view_image"
+                        />
+
+                    <TextView
+                        android:id="@+id/emptyMessageTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/emptyViewImage"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="22dp"
+                        android:text="@string/empty_view_message_title"
+                        android:gravity="center_horizontal"
+                        android:textColor="@color/medium_grey"
+                        android:textSize="25sp"/>
+
+                    <TextView
+                        android:id="@+id/emptyMessage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/emptyMessageTitle"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginLeft="1dp"
+                        android:layout_marginStart="1dp"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/empty_view_message"
+                        android:textColor="@color/light_grey"
+                        android:textSize="16sp"/>
+                </RelativeLayout>
+
+            </ScrollView>
+
         </RelativeLayout>
 
     </RelativeLayout>

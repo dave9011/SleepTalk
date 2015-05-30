@@ -83,6 +83,7 @@ public class MainActivity extends ActionBarActivity {
         mContactsListView = (ListView)findViewById(R.id.contactSelectedList);
         mContactsListView.setEmptyView(findViewById(R.id.empty));
 
+        //TODO: FIX THIS ASAP! makes app crash when rotated before opening dialog for the first time
         if(savedInstanceState != null){
 
             mContactsDisplayed = savedInstanceState.getParcelableArrayList(CONTACTS_IN_LIST_VIEW_KEY);
@@ -95,6 +96,8 @@ public class MainActivity extends ActionBarActivity {
 
             mContactsAdapter = new CustomContactsAdapter(this, R.layout.contacts_list_item, mContactsDisplayed, mAllContacts);
             mContactsListView.setAdapter(mContactsAdapter);
+
+            setContactListCAB();
 
         }
 

@@ -34,25 +34,29 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 //TODO: use a service for long running app: http://developer.android.com/reference/android/app/Service.html
-//TODO: consider: autocomplete dropwdown search
 //TODO:ADD SWIPE TO REMOVE
 //TODO: app crashes on screen rotate
 
 public class MainActivity extends ActionBarActivity {
 
-    public static final String CONTACTS_ADAPTER_DATA_KEY = "mContactsSelected";
-    static final int PICK_CONTACT_REQUEST = 1;  // The request code
+    private static final String CONTACTS_IN_LIST_VIEW_KEY = "listview_contacts";
+    private static final String ALL_CONTACTS_ARRAY_KEY = "all_contacts_array";
+    private static final String ALL_CONTACT_NAMES_KEY = "all_contact_names";
+    private static final String CONTACTS_CHECKED_IN_DIALOG_KEY = "contacts_in_dialog";
+    private static final String TOTAL_NUM_CONTACTS_KEY = "total_contacts";
 
-    private boolean wasCallReceived;
+    private boolean wasCallReceived;  //TODO: is this variable doing anything?
     private int currentRingerMode;
     private ImageButton ringerModeButton;
     private AudioManager mAudioManager;
     private Spinner ringerModeSpinner;
-    private ListView mContactsSelectedListView;
+    private ListView mContactsListView;
     private AlertDialog mContactsDialog;
-    private ArrayList<Contact> mContactsSelected;
+    private Contact[] mAllContacts;
+    private ArrayList<Contact> mContactsDisplayed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,8 +80,23 @@ public class MainActivity extends ActionBarActivity {
 
         mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 
-        mContactsSelectedListView = (ListView)findViewById(R.id.contactSelectedList);
-        mContactsSelectedListView.setEmptyView(findViewById(R.id.empty));
+        mContactsListView = (ListView)findViewById(R.id.contactSelectedList);
+        mContactsListView.setEmptyView(findViewById(R.id.empty));
+
+        if(savedInstanceState != null){
+
+            mContactsDisplayed = savedInstanceState.getParcelableArrayList(CONTACTS_IN_LIST_VIEW_KEY);
+            int totalNumContacts = savedInstanceState.getInt(TOTAL_NUM_CONTACTS_KEY);
+            mAllContacts = new Contact[totalNumContacts];
+            mAllContacts = (savedInstanceState.getParcelableArrayList(ALL_CONTACTS_ARRAY_KEY)).toArray(mAllContacts);
+
+            mContactsAdapterNames = savedInstanceState.getStringArray(ALL_CONTACT_NAMES_KEY);
+            mContactsCheckedInDialog = savedInstanceState.getBooleanArray(CONTACTS_CHECKED_IN_DIALOG_KEY);
+
+            mContactsAdapter = new CustomContactsAdapter(this, R.layout.contacts_list_item, mContactsDisplayed, mAllContacts);
+            mContactsListView.setAdapter(mContactsAdapter);
+
+        }
 
         setCustomFonts();
 
@@ -85,8 +104,8 @@ public class MainActivity extends ActionBarActivity {
 
     private void setContactListCAB(){
 
-        mContactsSelectedListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        mContactsSelectedListView.setMultiChoiceModeListener( new AbsListView.MultiChoiceModeListener() {
+        mContactsListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        mContactsListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
 
             private int nr = 0;
 
@@ -101,8 +120,8 @@ public class MainActivity extends ActionBarActivity {
             public void onDestroyActionMode(ActionMode mode) {
                 // Here you can make any necessary updates to the activity when
                 // the CAB is removed. By default, selected items are deselected/unchecked.
-                contactsAdapter.clearCABSelection();
-                contactsAdapter.setSelectingFromCAB(false);
+                mContactsAdapter.clearCABSelection();
+                mContactsAdapter.setSelectingFromCAB(false);
             }
 
             @Override
@@ -119,8 +138,8 @@ public class MainActivity extends ActionBarActivity {
 
                 switch (item.getItemId()) {
                     case R.id.remove_contact:
-                        contactsAdapter.removeAllInCABSelection();
-                        contactsCheckedInDialog = contactsAdapter.getContactsCheckedArray();
+                        mContactsAdapter.removeAllInCABSelection();
+                        mContactsCheckedInDialog = mContactsAdapter.getContactsCheckedArray();
                         mode.finish(); // Action picked, so close the CAB
                         return true;
                     default:
@@ -132,17 +151,24 @@ public class MainActivity extends ActionBarActivity {
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
                 // Here you can do something when items are selected/de-selected,
                 // such as update the title in the CAB
-                contactsAdapter.setSelectingFromCAB(true);
-                if(checked){
+                Log.d("contextSelection --- ", "before");
+                mContactsAdapter.printContextSelection();
+
+                mContactsAdapter.setSelectingFromCAB(true);
+                if (checked) {
                     nr++;
-                    contactsAdapter.addThroughContextAction(position);
-                    contactsAdapter.setSelectionInContactsChecked(position, true);
+                    mContactsAdapter.addThroughContextAction(position);
+                    Log.d("*** position: " + position, " added to contextSelection");
+                    mContactsAdapter.setSelectionInContactsChecked(position, true);
                 } else {
                     nr--;
-                    contactsAdapter.removeThroughContextAction(position);
-                    contactsAdapter.setSelectionInContactsChecked(position, false);
+                    mContactsAdapter.removeThroughContextAction(position);
+                    Log.d("*** position: " + position, " removed from contextSelection");
+                    mContactsAdapter.setSelectionInContactsChecked(position, false);
                 }
                 mode.setTitle(nr + " selected");
+                Log.d("contextSelection --- ", "after");
+                mContactsAdapter.printContextSelection();
             }
 
         });
@@ -150,26 +176,24 @@ public class MainActivity extends ActionBarActivity {
     }
 
     AlertDialog.Builder mDialogBuilder;
-    CustomContactsAdapter contactsAdapter;
-    private String[] contactsAdapterNames;
-    private boolean[] contactsCheckedInDialog;
+    CustomContactsAdapter mContactsAdapter;
+    private String[] mContactsAdapterNames;
+    private boolean[] mContactsCheckedInDialog;
     NotificationCompat.Builder mBuilder;
 
     private void showAddContactsDialog() {  //TODO: make contacts reload after new contact added
 
-        if(contactsAdapter == null){
-
-            Contact[] allContacts; //array of Contact objects for each contact
+        if(mContactsAdapter == null){
 
             Cursor contactsCursor = getContactsCursor();
-            allContacts = new Contact[contactsCursor.getCount()];
+            mAllContacts = new Contact[contactsCursor.getCount()];
 
             int cursorIndex = 0;
 
             if (contactsCursor.getCount() > 0) {
                 while (contactsCursor.moveToNext()) {
                     String name = contactsCursor.getString(contactsCursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
-                    allContacts[cursorIndex] = new Contact(cursorIndex, name);
+                    mAllContacts[cursorIndex] = new Contact(cursorIndex, name);
                     cursorIndex++;
                 }
                 contactsCursor.close();
@@ -177,10 +201,10 @@ public class MainActivity extends ActionBarActivity {
 
             //Initialize the adapter for the list view, using a blank list for the third argument,
             // representing the initial empty list of contacts selected
-            contactsAdapter = new CustomContactsAdapter(this, R.layout.contacts_list_item, new ArrayList<Contact>(), allContacts);
+            mContactsAdapter = new CustomContactsAdapter(this, R.layout.contacts_list_item, new ArrayList<Contact>(), mAllContacts);
 
-            contactsAdapterNames = contactsAdapter.getContactNamesArray();
-            contactsCheckedInDialog = contactsAdapter.getContactsCheckedArray();
+            mContactsAdapterNames = mContactsAdapter.getContactNamesArray();
+            mContactsCheckedInDialog = mContactsAdapter.getContactsCheckedArray();
 
         }
 
@@ -191,9 +215,16 @@ public class MainActivity extends ActionBarActivity {
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            mContactsSelectedListView.setAdapter(contactsAdapter);
+
+                            if(mContactsListView.getAdapter() == null){
+                                mContactsListView.setAdapter(mContactsAdapter);
+                            }
+
+                            mContactsDisplayed = mContactsAdapter.getContactsDisplayed();
+
                             setContactListCAB();
 
+                            //TODO: fix the placement of this
                             if(mBuilder == null){
                                 mBuilder = new NotificationCompat.Builder(MainActivity.this);
                                 mBuilder.setSmallIcon(R.drawable.ic_status_running)
@@ -211,28 +242,28 @@ public class MainActivity extends ActionBarActivity {
                         }
                     })
                     .setNegativeButton(android.R.string.cancel, null)
-                    .setMultiChoiceItems(contactsAdapterNames, contactsCheckedInDialog, new DialogInterface.OnMultiChoiceClickListener() {
+                    .setMultiChoiceItems(mContactsAdapterNames, mContactsCheckedInDialog, new DialogInterface.OnMultiChoiceClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which, boolean isChecked) {
 
                             if (isChecked) {
-                                contactsAdapter.addThroughDialog(which);
-                            } else if(contactsAdapter.isContactSelected(which)) {
-                                contactsAdapter.removeThroughDialog(which);
+                                mContactsAdapter.addThroughDialog(which);
+                            } else if(mContactsAdapter.isContactSelected(which)) {
+                                mContactsAdapter.removeThroughDialog(which);
                             }
                         }
 
                     });
 
         } else {
-            mDialogBuilder.setMultiChoiceItems(contactsAdapterNames, contactsCheckedInDialog, new DialogInterface.OnMultiChoiceClickListener() {
+            mDialogBuilder.setMultiChoiceItems(mContactsAdapterNames, mContactsCheckedInDialog, new DialogInterface.OnMultiChoiceClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which, boolean isChecked) {
 
                     if (isChecked) {
-                        contactsAdapter.addThroughDialog(which);
-                    } else if(contactsAdapter.isContactSelected(which)) {
-                        contactsAdapter.removeThroughDialog(which);
+                        mContactsAdapter.addThroughDialog(which);
+                    } else if(mContactsAdapter.isContactSelected(which)) {
+                        mContactsAdapter.removeThroughDialog(which);
                     }
                 }
 
@@ -278,7 +309,7 @@ public class MainActivity extends ActionBarActivity {
 
             if(state.equals(TelephonyManager.EXTRA_STATE_RINGING) ){
 
-                if(mContactsSelected != null && !mContactsSelected.isEmpty()){
+                if(mContactsDisplayed != null && !mContactsDisplayed.isEmpty()){
 
                     //Get name of incoming caller
                     String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
@@ -288,7 +319,7 @@ public class MainActivity extends ActionBarActivity {
                     if (cursor != null && cursor.moveToFirst()) {
                         String name = cursor.getString(0);
                         cursor.close();
-                        for(Contact contact : mContactsSelected){
+                        for(Contact contact : mContactsDisplayed){
                             if(contact.getName().equals(name)){
                                 Toast.makeText(context, "in for loop wasCallReceived = " + wasCallReceived, Toast.LENGTH_SHORT).show();
                                 currentRingerMode = mAudioManager.getRingerMode();
@@ -342,6 +373,20 @@ public class MainActivity extends ActionBarActivity {
     }
     */
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        if(mContactsAdapter != null ){
+            outState.putParcelableArrayList(CONTACTS_IN_LIST_VIEW_KEY, mContactsDisplayed);
+            outState.putInt(TOTAL_NUM_CONTACTS_KEY, mAllContacts.length);
+            ArrayList<Contact> myList = new ArrayList<>(Arrays.asList(mAllContacts));
+            outState.putParcelableArrayList(ALL_CONTACTS_ARRAY_KEY, myList);
+            outState.putStringArray(ALL_CONTACT_NAMES_KEY, mContactsAdapterNames);
+            outState.putBooleanArray(CONTACTS_CHECKED_IN_DIALOG_KEY, mContactsCheckedInDialog);
+        }
+
+    }
 
     @Override
     protected void onResume() {

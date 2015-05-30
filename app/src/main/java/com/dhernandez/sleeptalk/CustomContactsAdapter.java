@@ -11,7 +11,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * time:     2:18 PM
@@ -24,7 +23,7 @@ public class CustomContactsAdapter extends ArrayAdapter<Contact> {
     int layoutResourceId;
     Contact[] allContacts;
     private boolean[] contactsChecked;
-    private ArrayList<Integer> contextSelection;
+    private ArrayList<Contact> contextSelection;
     private boolean selectingFromCAB;
     private ArrayList<Contact> listToDisplay;
 
@@ -44,6 +43,17 @@ public class CustomContactsAdapter extends ArrayAdapter<Contact> {
 
     public ArrayList<Contact> getContactsDisplayed(){
         return listToDisplay;
+    }
+
+    public int getNumContactsDisplayed() {
+        return listToDisplay.size();
+    }
+
+    public void printContextSelection(){
+        for(Contact ctc : contextSelection){
+            System.out.print(ctc.getName() + "->");
+        }
+        System.out.println();
     }
 
     public void setSelectionInContactsChecked(int positionInListView, boolean isChecked){
@@ -72,39 +82,33 @@ public class CustomContactsAdapter extends ArrayAdapter<Contact> {
     }
 
     public void addThroughContextAction(int positionInListView){
-        contextSelection.add(positionInListView);
-        listToDisplay.get(positionInListView).setChecked(true);
+        Contact contact = listToDisplay.get(positionInListView);
+        contextSelection.add(contact);
+        contact.setChecked(true);
         notifyDataSetChanged();
     }
 
     public void removeThroughContextAction(int positionInListView){
-        contextSelection.remove(positionInListView);
-        listToDisplay.get(positionInListView).setChecked(false);
+        Contact contact = listToDisplay.get(positionInListView);
+        contextSelection.remove(contact);
+        contact.setChecked(false);
         notifyDataSetChanged();
     }
 
     public void removeAllInCABSelection(){
-        Collections.sort(contextSelection, Collections.reverseOrder());
-        int initialContextSelectionSize = contextSelection.size();
-        for(int s=0; s<initialContextSelectionSize; s++){
-            int index = contextSelection.get(0);
-            Contact listViewContact = listToDisplay.get(index);
-            listViewContact.setChecked(false);
-            int contactId = listViewContact.getId();
-            contactsChecked[contactId] = false;
-            listToDisplay.remove(index);
-            contextSelection.remove(0);
+        for(Contact ctc : contextSelection){
+            contactsChecked[ctc.getId()] = false;
+            listToDisplay.remove(ctc);
         }
+        contextSelection.clear();
         notifyDataSetChanged();
     }
 
     public void clearCABSelection(){
-        //for each index specified in the contextSelection list
-        for(int s=0; s<contextSelection.size(); s++){
-            //get the Contact object corresponding to the contact at that index, and set it's field 'checked' = false
-            listToDisplay.get(contextSelection.get(0)).setChecked(false);
+        for(Contact ctc : contextSelection){
+            ctc.setChecked(false);
         }
-        contextSelection = new ArrayList<>();
+        contextSelection.clear();
     }
 
     public void removeThroughDialog(int id){
